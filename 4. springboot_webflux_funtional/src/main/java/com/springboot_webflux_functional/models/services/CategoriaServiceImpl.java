@@ -32,4 +32,9 @@ public class CategoriaServiceImpl implements CategoriaService{
     public Mono<Categoria> findByNombre(String nombre) {
         return categoriaDao.findByNombre(nombre);
     }
+
+    @Override
+    public Mono<Void> deleteAll() { // 🔥 Implementación de deleteAll()
+        return categoriaDao.deleteAll();
+    }
 }

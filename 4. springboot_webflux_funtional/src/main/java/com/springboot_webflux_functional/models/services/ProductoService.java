@@ -11,9 +11,9 @@ import java.util.Map;
 
 public interface ProductoService {
 	
-	public Flux<Producto> findAll();
+	public Flux<Producto> findAllProducto();
 	
-	public Mono<Producto> findById(String id);
+	public Mono<Producto> findProductoById(String id);
 
 	public Mono<Producto> save(Producto producto);
 
@@ -28,5 +28,7 @@ public interface ProductoService {
 	public Mono<Producto> createProductoWithPhoto(Mono<Producto> productoMono, FilePart filePart, String path);
 
 	public Mono<Producto> findByNombre(String nombre);
+
+	public Mono<Void> deleteAll();
 
 }

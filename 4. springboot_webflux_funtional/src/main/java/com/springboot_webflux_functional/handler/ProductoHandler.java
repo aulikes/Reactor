@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.FormFieldPart;
 import org.springframework.http.codec.multipart.Part;
@@ -16,21 +15,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.File;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-
-import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 @Component
 public class ProductoHandler {
@@ -47,12 +40,12 @@ public class ProductoHandler {
     public Mono<ServerResponse> listar(ServerRequest request){
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .body(service.findAll(), Producto.class);
+                .body(service.findAllProducto(), Producto.class);
     }
 
     public Mono<ServerResponse> ver(ServerRequest request){
         String id = request.pathVariable("id");
-        return service.findById(id)
+        return service.findProductoById(id)
                 .flatMap( p -> ServerResponse
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON_UTF8)

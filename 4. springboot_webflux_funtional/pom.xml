@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -26,9 +26,12 @@
 		<tag/>
 		<url/>
 	</scm>
+	<!-- 🔥 Definir valores predeterminados para que Maven los reconozca -->
 	<properties>
 		<java.version>17</java.version>
 		<lombok.version>1.18.28</lombok.version>
+		<skipIntegrationTests>true</skipIntegrationTests>  <!-- 🔥 Por defecto, se omiten las pruebas de integración -->
+		<skipE2ETests>true</skipE2ETests>  <!-- 🔥 Por defecto, se omiten las pruebas E2E -->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -70,43 +73,87 @@
 
 	<build>
 		<plugins>
+			<!-- 🟢 Plugin para ejecutar SOLO pruebas unitarias con "./mvnw test" -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.10.1</version>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M7</version>
 				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>${lombok.version}</version>
-						</path>
-					</annotationProcessorPaths>
+					<includes>
+						<include>**/*Test.java</include> <!-- Solo ejecuta pruebas unitarias -->
+					</includes>
+					<excludes>
+						<exclude>**/*IT.java</exclude>  <!-- Excluye integración -->
+						<exclude>**/*E2ETest.java</exclude> <!-- Excluye E2E -->
+					</excludes>
 				</configuration>
 			</plugin>
+
+			<!-- 🔵 Plugin UNIFICADO para ejecutar pruebas de integración y E2E
+        		con "./mvnw verify -Pintegration" o con "./mvnw verify -Pe2e" -->
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.0.0-M7</version>
+				<executions>
+					<execution>
+						<id>integration-tests</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>**/*IT.java</include> <!-- Solo ejecuta pruebas de integración -->
+							</includes>
+							<skipTests>${skipIntegrationTests}</skipTests> <!-- 🔥 Se ejecuta solo cuando `-Pintegration` está activo -->
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>e2e-tests</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>**/*E2ETest.java</include> <!-- Solo ejecuta pruebas E2E -->
+							</includes>
+							<skipTests>${skipE2ETests}</skipTests> <!-- 🔥 Se ejecuta solo cuando `-Pe2e` está activo -->
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
-		<!-- Perfil para pruebas de integración -->
+		<!-- 🔵 Perfil para pruebas de integración -->
 		<profile>
 			<id>integration</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
 			<properties>
 				<spring.profiles.active>integration</spring.profiles.active>
+				<skipIntegrationTests>false</skipIntegrationTests>  <!-- 🔥 Se ejecutan pruebas de integración -->
+				<skipE2ETests>true</skipE2ETests>  <!-- 🔥 Se omiten pruebas E2E -->
 			</properties>
 		</profile>
 
-		<!-- Perfil para pruebas E2E -->
+		<!-- 🔴 Perfil para pruebas E2E -->
 		<profile>
 			<id>e2e</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
 			<properties>
 				<spring.profiles.active>e2e</spring.profiles.active>
+				<skipIntegrationTests>true</skipIntegrationTests>  <!-- 🔥 Se omiten pruebas de integración -->
+				<skipE2ETests>false</skipE2ETests>  <!-- 🔥 Se ejecutan pruebas E2E -->
 			</properties>
 		</profile>
 	</profiles>

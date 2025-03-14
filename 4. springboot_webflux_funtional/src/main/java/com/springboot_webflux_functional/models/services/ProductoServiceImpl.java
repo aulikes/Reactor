@@ -2,12 +2,9 @@ package com.springboot_webflux_functional.models.services;
 
 import com.springboot_webflux_functional.exceptions.ProductoNotFoundException;
 import com.springboot_webflux_functional.models.dao.ProductoDao;
-import com.springboot_webflux_functional.models.documents.Categoria;
 import com.springboot_webflux_functional.models.documents.Producto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.codec.multipart.FormFieldPart;
-import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
@@ -15,7 +12,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,12 +21,12 @@ public class ProductoServiceImpl implements ProductoService {
 	private ProductoDao dao;
 	
 	@Override
-	public Flux<Producto> findAll() {
+	public Flux<Producto> findAllProducto() {
 		return dao.findAll();
 	}
 
 	@Override
-	public Mono<Producto> findById(String id) {
+	public Mono<Producto> findProductoById(String id) {
 		return dao.findById(id)
 				.switchIfEmpty(Mono.error(new ProductoNotFoundException(id)));
 	}
@@ -44,7 +40,7 @@ public class ProductoServiceImpl implements ProductoService {
 	@Override
 	public Mono<Producto> updateAll(Mono<Producto> productoReq, String id) {
 
-		Mono<Producto> productoDb = this.findById(id); // AQUÍ YA SE MANEJA EL ERROR DEL PRODUCTO NO ENCONTRADO
+		Mono<Producto> productoDb = this.findProductoById(id); // AQUÍ YA SE MANEJA EL ERROR DEL PRODUCTO NO ENCONTRADO
 
 		return productoDb.zipWith(productoReq, (db, req) -> {//bd es productoDb, req es productoReq
 			db.setNombre(req.getNombre());
@@ -57,7 +53,7 @@ public class ProductoServiceImpl implements ProductoService {
 	@Override
 	public Mono<Producto> updatePartial(Mono<Producto> productoReq, String id) {
 
-		Mono<Producto> productoDb = this.findById(id); // AQUÍ YA SE MANEJA EL ERROR DEL PRODUCTO NO ENCONTRADO
+		Mono<Producto> productoDb = this.findProductoById(id); // AQUÍ YA SE MANEJA EL ERROR DEL PRODUCTO NO ENCONTRADO
 
 		return productoDb.zipWith(productoReq, (db, req) -> {//bd es productoDb, req es productoReq
 			// Actualiza solo los campos que no son nulos
@@ -85,7 +81,7 @@ public class ProductoServiceImpl implements ProductoService {
 	@Override
 	//subir una foto a un producto existente
 	public Mono<Producto> uploadPhoto(String id, Mono<FilePart> filePartMono, String path) {
-		return findById(id) // AQUÍ YA SE MANEJA EL ERROR DEL PRODUCTO NO ENCONTRADO
+		return findProductoById(id) // AQUÍ YA SE MANEJA EL ERROR DEL PRODUCTO NO ENCONTRADO
 			.flatMap(productoBD -> filePartMono.flatMap(file -> {
 				String sanitizedFilename = sanitizeFilename(file.filename());
 				productoBD.setFoto(UUID.randomUUID().toString() + "-" + sanitizedFilename);
@@ -112,6 +108,11 @@ public class ProductoServiceImpl implements ProductoService {
 	@Override
 	public Mono<Producto> findByNombre(String nombre) {
 		return dao.obtenerPorNombre(nombre);
+	}
+
+	@Override
+	public Mono<Void> deleteAll() { // 🔥 Implementación de deleteAll()
+		return dao.deleteAll();
 	}
 
 

@@ -14,4 +14,6 @@ public interface CategoriaService {
     public Mono<Categoria> saveCategoria(Categoria categoria);
 
     public Mono<Categoria> findByNombre(String nombre);
+
+    public Mono<Void> deleteAll();
 }
