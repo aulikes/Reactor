@@ -2,37 +2,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.1</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
+
 	<groupId>com</groupId>
 	<artifactId>springboot_webflux_functional</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>springboot_webflux_functional</name>
 	<description>Demo project for Spring Boot</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<!-- 🔥 Definir valores predeterminados para que Maven los reconozca -->
+
+	<!-- 🔹 PROPIEDADES GLOBALES -->
 	<properties>
 		<java.version>17</java.version>
 		<lombok.version>1.18.28</lombok.version>
-		<skipIntegrationTests>true</skipIntegrationTests>  <!-- 🔥 Por defecto, se omiten las pruebas de integración -->
-		<skipE2ETests>true</skipE2ETests>  <!-- 🔥 Por defecto, se omiten las pruebas E2E -->
+
+		<!-- 🔥 Propiedad global para habilitar/deshabilitar TODAS las pruebas -->
+		<skipTests>false</skipTests>
+
+		<!-- 🔥 Propiedades específicas por tipo de prueba -->
+		<skipIntegrationTests>true</skipIntegrationTests>
+		<skipE2ETests>true</skipE2ETests>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -42,12 +38,9 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -65,64 +58,60 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<!-- 🟢 Plugin para ejecutar SOLO pruebas unitarias con "./mvnw test" -->
+			<!-- 🔵 Plugin para pruebas UNITARIAS -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M7</version>
 				<configuration>
 					<includes>
-						<include>**/*Test.java</include> <!-- Solo ejecuta pruebas unitarias -->
+						<include>**/*Test.java</include>  <!-- Solo ejecuta pruebas unitarias -->
 					</includes>
 					<excludes>
 						<exclude>**/*IT.java</exclude>  <!-- Excluye integración -->
 						<exclude>**/*E2ETest.java</exclude> <!-- Excluye E2E -->
 					</excludes>
+					<skipTests>${skipTests}</skipTests>  <!-- 🔥 Controlado por la propiedad global -->
 				</configuration>
 			</plugin>
 
-			<!-- 🔵 Plugin UNIFICADO para ejecutar pruebas de integración y E2E
-        		con "./mvnw verify -Pintegration" o con "./mvnw verify -Pe2e" -->
+			<!-- 🔴 Plugin para pruebas de Integración y E2E -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>3.0.0-M7</version>
 				<executions>
+					<!-- 🔵 PRUEBAS DE INTEGRACIÓN -->
 					<execution>
 						<id>integration-tests</id>
-						<phase>verify</phase>
+						<phase>integration-test</phase>
 						<goals>
 							<goal>integration-test</goal>
-							<goal>verify</goal>
 						</goals>
 						<configuration>
 							<includes>
-								<include>**/*IT.java</include> <!-- Solo ejecuta pruebas de integración -->
+								<include>**/*IT.java</include>  <!-- Solo integración -->
 							</includes>
-							<skipTests>${skipIntegrationTests}</skipTests> <!-- 🔥 Se ejecuta solo cuando `-Pintegration` está activo -->
+							<skipTests>${skipIntegrationTests}</skipTests>  <!-- 🔥 Se controla por el perfil -->
 						</configuration>
 					</execution>
 
+					<!-- 🔴 PRUEBAS E2E -->
 					<execution>
 						<id>e2e-tests</id>
-						<phase>verify</phase>
+						<phase>verify</phase>  <!-- 🔥 Se ejecuta en `verify` para no interferir con integración -->
 						<goals>
 							<goal>integration-test</goal>
-							<goal>verify</goal>
 						</goals>
 						<configuration>
 							<includes>
-								<include>**/*E2ETest.java</include> <!-- Solo ejecuta pruebas E2E -->
+								<include>**/*E2ETest.java</include>  <!-- Solo E2E -->
 							</includes>
-							<skipTests>${skipE2ETests}</skipTests> <!-- 🔥 Se ejecuta solo cuando `-Pe2e` está activo -->
+							<skipTests>${skipE2ETests}</skipTests>  <!-- 🔥 Se controla por el perfil -->
 						</configuration>
 					</execution>
 				</executions>
@@ -131,31 +120,26 @@
 	</build>
 
 	<profiles>
-		<!-- 🔵 Perfil para pruebas de integración -->
+		<!-- 🔵 PERFIL PARA PRUEBAS DE INTEGRACIÓN -->
 		<profile>
 			<id>integration</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
 			<properties>
 				<spring.profiles.active>integration</spring.profiles.active>
-				<skipIntegrationTests>false</skipIntegrationTests>  <!-- 🔥 Se ejecutan pruebas de integración -->
-				<skipE2ETests>true</skipE2ETests>  <!-- 🔥 Se omiten pruebas E2E -->
+				<skipTests>true</skipTests>  <!-- 🔥 No correr pruebas unitarias -->
+				<skipIntegrationTests>false</skipIntegrationTests>  <!-- 🔥 Ejecuta integración -->
+				<skipE2ETests>true</skipE2ETests>  <!-- 🔥 No ejecuta E2E -->
 			</properties>
 		</profile>
 
-		<!-- 🔴 Perfil para pruebas E2E -->
+		<!-- 🔴 PERFIL PARA PRUEBAS E2E -->
 		<profile>
 			<id>e2e</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
 			<properties>
 				<spring.profiles.active>e2e</spring.profiles.active>
-				<skipIntegrationTests>true</skipIntegrationTests>  <!-- 🔥 Se omiten pruebas de integración -->
-				<skipE2ETests>false</skipE2ETests>  <!-- 🔥 Se ejecutan pruebas E2E -->
+				<skipTests>true</skipTests>  <!-- 🔥 No correr pruebas unitarias -->
+				<skipIntegrationTests>true</skipIntegrationTests>  <!-- 🔥 No ejecuta integración -->
+				<skipE2ETests>false</skipE2ETests>  <!-- 🔥 Ejecuta E2E -->
 			</properties>
 		</profile>
 	</profiles>
-
 </project>

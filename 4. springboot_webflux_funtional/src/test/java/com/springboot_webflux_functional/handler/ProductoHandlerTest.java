@@ -11,6 +11,6 @@ class ProductoHandlerTest {
 
     @Test
     void pruebaTest() {
-        System.out.println("🚀 Prueba E2E ejecutada.");
+        System.out.println("🚀 Prueba UNITARIA ejecutada.");
     }
 }

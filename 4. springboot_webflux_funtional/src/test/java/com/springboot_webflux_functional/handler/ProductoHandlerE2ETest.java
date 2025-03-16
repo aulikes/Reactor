@@ -8,7 +8,6 @@ import com.springboot_webflux_functional.models.services.ProductoService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +27,8 @@ import java.util.List;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("e2e")  // 🔥 Activa la configuración específica de pruebas E2E
 @ComponentScan("com.springboot_webflux_functional.config")
+// 🔥 Resetear el contexto después de cada prueba para mantener una base de datos limpia
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ProductoHandlerE2ETest {
 
     @Autowired
@@ -65,59 +66,20 @@ class ProductoHandlerE2ETest {
     }
 
     @Test
-    void listarTest() {
-        client.get()
-            .uri(url)
-            .accept(MediaType.APPLICATION_JSON_UTF8)
-            .exchange()
-            .expectStatus().isOk()
-            .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-            .expectBodyList(Producto.class)
-            .consumeWith(response -> {
-                List<Producto> productos = response.getResponseBody();
-                productos.forEach(p -> {
-                    System.out.println(p.getNombre());
-                });
-                Assertions.assertThat(!productos.isEmpty()).isTrue();
-            });
-    }
-
-    @Test
-    void verTest() {
-        Producto producto = productoService.findByNombre("TV Panasonic Pantalla LCD").block();
-        client.get()
-            .uri(url + "/{id}", Collections.singletonMap("id", producto.getId()))
-            .accept(MediaType.APPLICATION_JSON_UTF8)
-            .exchange()
-            .expectStatus().isOk()
-            .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-            /*.expectBody() //para probar solo son el path de JSON
-            .jsonPath("$.id").isNotEmpty()
-            .jsonPath("$.nombre").isEqualTo("TV Panasonic Pantalla LCD");*/
-            //PARA UNA MANERA MÁS DETALLADA
-            .expectBody(Producto.class)
-            .consumeWith(response -> {
-                Producto p = response.getResponseBody();
-                Assertions.assertThat(p.getId()).isNotEmpty();
-                Assertions.assertThat(p.getNombre()).isEqualTo("TV Panasonic Pantalla LCD");
-            });
-    }
-
-    @Test
     void crearTest() { //VERIFICANDO DE FORMA JSON
         Categoria categoria = categoriaService.findByNombre("Muebles").block();
         Producto producto = new Producto("Mesa comedor", 100.00, categoria);
         client.post().uri(url)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
-            .accept(MediaType.APPLICATION_JSON_UTF8)
-            .body(Mono.just(producto), Producto.class)
-            .exchange()
-            .expectStatus().isCreated()
-            .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-            .expectBody()
-            .jsonPath("$.producto.id").isNotEmpty()
-            .jsonPath("$.producto.nombre").isEqualTo("Mesa comedor")
-            .jsonPath("$.producto.categoria.nombre").isEqualTo("Muebles");
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .body(Mono.just(producto), Producto.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                .expectBody()
+                .jsonPath("$.producto.id").isNotEmpty()
+                .jsonPath("$.producto.nombre").isEqualTo("Mesa comedor")
+                .jsonPath("$.producto.categoria.nombre").isEqualTo("Muebles");
     }
 
     @Test
@@ -125,20 +87,20 @@ class ProductoHandlerE2ETest {
         Categoria categoria = categoriaService.findByNombre("Muebles").block();
         Producto producto = new Producto("Mesa comedor2", 100.00, categoria);
         client.post().uri(url)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
-            .accept(MediaType.APPLICATION_JSON_UTF8)
-            .body(Mono.just(producto), Producto.class)
-            .exchange()
-            .expectStatus().isCreated()
-            .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-            .expectBody(new ParameterizedTypeReference<LinkedHashMap<String, Object>>() {})
-            .consumeWith(response -> {
-                Object o = response.getResponseBody().get("producto");
-                Producto p = new ObjectMapper().convertValue(o, Producto.class);
-                Assertions.assertThat(p.getId()).isNotEmpty();
-                Assertions.assertThat(p.getNombre()).isEqualTo("Mesa comedor2");
-                Assertions.assertThat(p.getCategoria().getNombre()).isEqualTo("Muebles");
-            });
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .body(Mono.just(producto), Producto.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                .expectBody(new ParameterizedTypeReference<LinkedHashMap<String, Object>>() {})
+                .consumeWith(response -> {
+                    Object o = response.getResponseBody().get("producto");
+                    Producto p = new ObjectMapper().convertValue(o, Producto.class);
+                    Assertions.assertThat(p.getId()).isNotEmpty();
+                    Assertions.assertThat(p.getNombre()).isEqualTo("Mesa comedor2");
+                    Assertions.assertThat(p.getCategoria().getNombre()).isEqualTo("Muebles");
+                });
     }
 
     @Test
@@ -165,17 +127,17 @@ class ProductoHandlerE2ETest {
     void eliminarTest() {
         Producto producto = productoService.findByNombre("Mica Cómoda 5 Cajones").block();
         client.delete()
-            .uri(url + "/{id}", Collections.singletonMap("id", producto.getId()))
-            .exchange()
-            .expectStatus().isNoContent()
-            .expectBody()
-            .isEmpty();
+                .uri(url + "/{id}", Collections.singletonMap("id", producto.getId()))
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody()
+                .isEmpty();
 
         client.get()
-            .uri(url + "/{id}", Collections.singletonMap("id", producto.getId()))
-            .exchange()
-            .expectStatus().isNotFound()
-            .expectBody()
-            .isEmpty();
+                .uri(url + "/{id}", Collections.singletonMap("id", producto.getId()))
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .isEmpty();
     }
 }

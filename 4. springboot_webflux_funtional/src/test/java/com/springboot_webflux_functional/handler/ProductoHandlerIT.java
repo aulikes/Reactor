@@ -17,8 +17,13 @@ import java.util.Collections;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("integration")  // 🔥 Activa la configuración específica de pruebas E2E
 @ComponentScan("com.springboot_webflux_functional.config")
+/*DEBERÍA SER ASÍ SI REALMENTE SON PRUEBAS DE INTEGRACIÓN Y NO SE VA A LEVANTAR TODO EL CONTEXTO DE SPRINBOOT
+  POR TANTO SE ELIMINAN LAS DOS ANTERIORES Y SE DEJA @WebFluxTest
+  @ActiveProfiles("integration") TAMBIÉN SE DEJA
+ */
+//@WebFluxTest(ProductoHandler.class)  // Solo carga los handlers
+@ActiveProfiles("integration")  // 🔥 Activa la configuración específica de pruebas integration
 class ProductoHandlerIT {
 
     @Autowired
