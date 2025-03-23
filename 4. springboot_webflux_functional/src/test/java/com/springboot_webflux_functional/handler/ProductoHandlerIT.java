@@ -18,8 +18,8 @@ import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ComponentScan("com.springboot_webflux_functional.config")
-/*DEBERÍA SER ASÍ SI REALMENTE SON PRUEBAS DE INTEGRACIÓN Y NO SE VA A LEVANTAR TODO EL CONTEXTO DE SPRINBOOT
-  POR TANTO SE ELIMINAN LAS DOS ANTERIORES Y SE DEJA @WebFluxTest
+/*DEBERÍA SER ASÍ, SI REALMENTE NO SON PRUEBAS DE INTEGRACIÓN Y NO SE VA A LEVANTAR TODO EL CONTEXTO DE SPRINBOOT
+  POR TANTO SE ELIMINAN LAS DOS ANTERIORES Y SE DEJA @WebFluxTest y
   @ActiveProfiles("integration") TAMBIÉN SE DEJA
  */
 //@WebFluxTest(ProductoHandler.class)  // Solo carga los handlers

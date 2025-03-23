@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,9 +25,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// Vamos a hacer el test con un MOCK para el servidor y por eso
+@AutoConfigureWebTestClient
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+//levantando un servidor real como se hizo en ProductoHandlerIT.java
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("e2e")  // 🔥 Activa la configuración específica de pruebas E2E
-@ComponentScan("com.springboot_webflux_functional.config")
 // 🔥 Resetear el contexto después de cada prueba para mantener una base de datos limpia
 //@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ProductoHandlerE2ETest {
