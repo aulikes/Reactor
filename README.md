@@ -9,8 +9,8 @@ ReactiveX (mediante el uso de Observables y operadores) nos ofrece una API flexi
 
 2. springboot-webflux
 
-Primero, debemos levantar la base de datos de MONGO, con el script de conexión que aparece en: application.properties
-La URL principal es http://localhost:8080/listar
+Primero, debemos levantar la base de datos de MONGO (cmd -> mongod), con el script de conexión que aparece en: application.properties
+La URL principal es http://localhost:8080/listar, para poder hacer uso de la aplicación
 
 Spring WebFlux:
 	1.	Recibe el Flux<Producto> como la respuesta del controlador.
