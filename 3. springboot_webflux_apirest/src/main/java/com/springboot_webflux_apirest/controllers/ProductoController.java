@@ -12,23 +12,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.WebExchangeBindException;
-import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.io.File;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
 
     @Autowired
-    private ProductoService service;
+    private ProductoService productoService;
 
     @Value("${config.uploads.path}")
     private String path;
@@ -38,13 +34,13 @@ public class ProductoController {
         return Mono.just(
             ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON_UTF8)
-            .body(service.findAll())
+            .body(productoService.findAll())
         );
     }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Producto>> ver(@PathVariable String id){
-        return service.findById(id)
+        return productoService.findById(id)
             .map(
                 p -> ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -65,7 +61,7 @@ public class ProductoController {
         Map<String, Object> response = new HashMap<>();
 
         return monoProducto
-                .flatMap(producto -> service.save(producto)
+                .flatMap(producto -> productoService.save(producto)
                         .map(p -> {
                             response.put("producto", p);
                             response.put("mensaje", "Producto creado con éxito");
@@ -92,7 +88,7 @@ public class ProductoController {
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Producto>> editarAll(@RequestBody Producto producto, @PathVariable String id) {
-        return service.updateAll(producto, id)
+        return productoService.updateAll(producto, id)
             .map(p -> ResponseEntity.created(URI.create("/api/productos/".concat(p.getId())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(p))
@@ -101,7 +97,7 @@ public class ProductoController {
 
     @PatchMapping("/{id}")
     public Mono<ResponseEntity<Producto>> editarPartial(@RequestBody Producto producto, @PathVariable String id) {
-        return service.updatePartial(producto, id)
+        return productoService.updatePartial(producto, id)
             .map(p -> ResponseEntity.created(URI.create("/api/productos/".concat(p.getId())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(p))
@@ -110,7 +106,7 @@ public class ProductoController {
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> eliminar(@PathVariable String id) {
-        return service.delete(id)
+        return productoService.delete(id)
             .flatMap(deleted -> {
                 if (deleted) {
                     return Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT));  // Si se eliminó, retorna 204 No Content
@@ -122,31 +118,17 @@ public class ProductoController {
 
     @PostMapping("/upload/{id}")
     public Mono<ResponseEntity<Producto>> upload(@PathVariable String id, @RequestPart FilePart file) {
-        return service.uploadPhoto(id, file, path)
+        return productoService.uploadPhoto(id, file, path)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build()); //ERROR DICIENDO QUE NO SE ENCONTRÓ EL PRODUCTO
     }
 
     @PostMapping("/v2")
     public Mono<ResponseEntity<Producto>> crearConFoto(Producto producto, @RequestPart FilePart file) {
-        return service.createProductWithPhoto(producto, file, path)
+        return productoService.createProductWithPhoto(producto, file, path)
                 .map(p -> ResponseEntity
                         .created(URI.create("/api/productos/".concat(p.getId())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(p));
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
